@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — Vales QR</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh}
+.topbar{background:#1a1a1a;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:15px;font-weight:600;color:#fff}
+.topbar-sub{font-size:11px;color:#888;margin-top:1px}
+.key-badge{font-size:11px;font-family:monospace;color:#666;background:#2a2a2a;padding:3px 8px;border-radius:6px}
+.db-badge{font-size:11px;padding:3px 8px;border-radius:6px;background:#166534;color:#bbf7d0;font-weight:500}
+.db-badge.offline{background:#7f1d1d;color:#fecaca}
+.container{max-width:680px;margin:0 auto;padding:20px 16px}
+.tabs{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;padding-bottom:2px}
+.tab{flex:0 0 auto;padding:8px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#666;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:500}
+.panel{display:none}.panel.active{display:block}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.card-sub{font-size:13px;color:#666;margin-bottom:14px}
+label{font-size:13px;color:#555;display:block;margin-bottom:5px;margin-top:14px}
+label:first-of-type{margin-top:0}
+input,select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;background:#fff;color:#1a1a1a;transition:border .15s}
+input:focus,select:focus{border-color:#888}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;margin-top:12px;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#1a1a1a}
+.btn-outline{background:#fff;color:#1a1a1a;border:1px solid #ddd}
+.btn-outline:hover{background:#f5f5f5}
+.btn-success{background:#16a34a}
+.btn-danger{background:#dc2626}
+.btn-warning{background:#d97706}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto;margin-top:0;border-radius:6px}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.status-ok{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px}
+.status-ok .st{color:#16a34a;font-weight:600;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.dr{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f0f0}
+.dr:last-child{border-bottom:none}
+.dr span:first-child{color:#666}.dr span:last-child{font-weight:500}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px;text-align:center}
+.metric-val{font-size:26px;font-weight:700;color:#1a1a1a}
+.metric-lbl{font-size:12px;color:#888;margin-top:2px}
+
+/* HISTORIAL */
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:8px}
+.hist-item:last-child{border-bottom:none}
+.hist-item.cancelado{opacity:.5}
+.hist-left{flex:1;min-width:0}
+.hist-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-gen{background:#dbeafe;color:#1d4ed8}
+.badge-ok{background:#dcfce7;color:#15803d}
+.badge-exp{background:#fef9c3;color:#a16207}
+.badge-inv{background:#fee2e2;color:#b91c1c}
+.badge-cancel{background:#f3f4f6;color:#6b7280;text-decoration:line-through}
+.hist-desc{font-size:13px;color:#1a1a1a;margin-top:2px}
+.hist-nota{font-size:12px;color:#aaa;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.hist-time{font-size:11px;color:#bbb;white-space:nowrap}
+
+.btn-cancel-vale{padding:4px 10px;font-size:11px;width:auto;margin-top:0;border-radius:6px;background:#fff;border:1px solid #fca5a5;color:#dc2626;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap}
+.btn-cancel-vale:hover{background:#fef2f2}
+.btn-restore-vale{padding:4px 10px;font-size:11px;width:auto;margin-top:0;border-radius:6px;background:#fff;border:1px solid #d1d5db;color:#6b7280;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap}
+.btn-restore-vale:hover{background:#f9fafb}
+
+.note{font-size:12px;color:#888;padding:8px 12px;background:#f9f9f9;border-left:3px solid #ddd;margin-top:10px;line-height:1.5}
+.pq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.pq-card{border:1px solid #e8e8e8;border-radius:10px;padding:10px;text-align:center;position:relative;background:#fff}
+.pq-card .pq-label{font-size:11px;margin-top:6px;font-weight:600}
+.pq-card .pq-fecha{font-size:10px;color:#888}
+.pq-remove{position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:2px}
+.bar-chart-row{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.bar-label span:first-child{color:#555}.bar-label span:last-child{font-weight:600}
+.bar-track{background:#f0f0f0;border-radius:4px;height:7px}
+.bar-fill{background:#2563eb;height:7px;border-radius:4px}
+.empty-state{text-align:center;padding:28px 0;color:#bbb;font-size:14px}
+.empty-state i{font-size:40px;display:block;margin-bottom:8px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:#555;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f4f0}
+.login-box{background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:32px;width:100%;max-width:340px;text-align:center}
+.login-box i{font-size:40px;color:#1a1a1a;margin-bottom:12px;display:block}
+.login-box h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.login-box p{font-size:13px;color:#888;margin-bottom:20px}
+.login-err{font-size:13px;color:#dc2626;margin-top:10px;display:none}
+@media(max-width:480px){.row2{grid-template-columns:1fr}.tabs{gap:4px}.tab{padding:7px 10px;font-size:12px}.hist-nota{max-width:160px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <i class="ti ti-shield-lock"></i>
+    <h2>Panel de administración</h2>
+    <p>Ingresá la contraseña para acceder.</p>
+    <input type="password" id="login-pw" placeholder="Contraseña admin..." onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn btn-primary" onclick="doLogin()"><i class="ti ti-login"></i> Ingresar</button>
+    <p class="login-err" id="login-err">Contraseña incorrecta.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="main-app" style="display:none">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="bar-nombre-display">Admin — Vales QR</div>
+      <div class="topbar-sub">Panel de administración</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="db-badge offline" id="db-badge">⏳ conectando...</span>
+      <button onclick="doLogout()" style="background:none;border:none;cursor:pointer;color:#888;font-size:20px;padding:0"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('gen')"><i class="ti ti-ticket"></i> Generar</div>
+      <div class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar"></i> Stats</div>
+      <div class="tab" onclick="switchTab('hist')"><i class="ti ti-history"></i> Historial</div>
+      <div class="tab" onclick="switchTab('imp')"><i class="ti ti-printer"></i> Imprimir</div>
+      <div class="tab" onclick="switchTab('cfg')"><i class="ti ti-settings"></i> Config</div>
+    </div>
+
+    <!-- GENERAR -->
+    <div class="panel active" id="panel-gen">
+      <div class="card">
+        <div class="card-title">Nuevo vale</div>
+        <div class="card-sub">Completá los datos y generá el QR firmado digitalmente.</div>
+        <div class="row2">
+          <div>
+            <label>Tipo de descuento</label>
+            <select id="gen-tipo" onchange="toggleValor()">
+              <option value="porcentaje">Porcentaje (%)</option>
+              <option value="monto">Monto fijo ($)</option>
+              <option value="2x1">2×1 en tragos</option>
+              <option value="copa_gratis">Copa gratis</option>
+            </select>
+          </div>
+          <div id="valor-wrap">
+            <label>Valor</label>
+            <input type="number" id="gen-valor" value="20" min="1"/>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Válido hasta</label>
+            <input type="date" id="gen-fecha"/>
+          </div>
+          <div>
+            <label>Usos máximos</label>
+            <select id="gen-usos">
+              <option value="1">1 uso (único)</option>
+              <option value="3">3 usos</option>
+              <option value="5">5 usos</option>
+              <option value="999">Sin límite</option>
+            </select>
+          </div>
+        </div>
+        <label>Nota / nombre del cliente (opcional)</label>
+        <input type="text" id="gen-nota" placeholder="Ej: Juan Pérez - Promo apertura"/>
+        <button class="btn btn-primary" onclick="generarVale()"><i class="ti ti-qrcode"></i> Generar QR</button>
+      </div>
+      <div id="qr-result" style="display:none">
+        <div class="card" style="text-align:center">
+          <img id="qr-img" width="220" height="220" alt="QR" style="display:block;margin:0 auto;border-radius:8px;border:1px solid #eee"/>
+          <p id="vale-desc" style="font-size:15px;font-weight:600;margin-top:14px"></p>
+          <p id="vale-sub" style="font-size:13px;color:#888;margin-top:3px"></p>
+          <div class="btn-grid">
+            <button class="btn btn-success" onclick="descargarPNG()"><i class="ti ti-download"></i> Descargar PNG</button>
+            <button class="btn btn-outline" onclick="copiarCodigo()"><i class="ti ti-copy"></i> Copiar código</button>
+          </div>
+          <button class="btn btn-outline" onclick="agregarAImpresion()"><i class="ti ti-printer"></i> Agregar a impresión</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="panel" id="panel-stats">
+      <div class="metric-grid" id="metric-grid"></div>
+      <div class="card">
+        <div class="card-title">Por tipo de descuento</div>
+        <div style="margin-top:12px" id="stats-tipos"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Últimos 7 días</div>
+        <canvas id="chart-dias" style="margin-top:12px" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="panel" id="panel-hist">
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+        <select id="hist-filtro" onchange="renderHist()" style="flex:1">
+          <option value="todos">Todos los eventos</option>
+          <option value="generado">Solo generados</option>
+          <option value="canjeado">Solo canjeados</option>
+          <option value="cancelado">Cancelados</option>
+          <option value="invalido">Rechazados / vencidos</option>
+        </select>
+        <button class="btn btn-sm btn-danger" onclick="limpiarHistLocal()"><i class="ti ti-trash"></i> Limpiar local</button>
+      </div>
+      <div id="hist-loading" style="text-align:center;padding:20px;color:#aaa;font-size:13px"><span class="spinner"></span> Cargando desde Firestore...</div>
+      <div class="card" id="hist-lista" style="display:none"></div>
+    </div>
+
+    <!-- IMPRIMIR -->
+    <div class="panel" id="panel-imp">
+      <div class="card">
+        <div class="card-title">Cola de impresión</div>
+        <div class="card-sub">Generá vales y agregálos para imprimir todos juntos.</div>
+        <div class="pq-grid" id="imp-grid"></div>
+        <div class="empty-state" id="imp-vacio"><i class="ti ti-ticket"></i>Sin vales en la cola.</div>
+        <div class="btn-grid">
+          <button class="btn btn-success" onclick="imprimirTodo()"><i class="ti ti-printer"></i> Imprimir todos</button>
+          <button class="btn btn-danger" onclick="vaciarCola()"><i class="ti ti-trash"></i> Vaciar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="panel" id="panel-cfg">
+      <div class="card">
+        <div class="card-title">Nombre del bar</div>
+        <label>Nombre</label>
+        <input type="text" id="cfg-nombre" placeholder="Ej: Bar La Esquina"/>
+        <div class="card-title" style="margin-top:20px">Clave secreta HMAC</div>
+        <div class="note">Esta clave firma los QR. Debe ser idéntica a la que usa la página del cajero (index.html). Si la cambiás, los vales anteriores dejan de funcionar.</div>
+        <label style="margin-top:10px">Nueva clave</label>
+        <input type="password" id="cfg-secret" placeholder="Nueva clave secreta..."/>
+        <div class="card-title" style="margin-top:20px">Contraseña del panel admin</div>
+        <label>Nueva contraseña</label>
+        <input type="password" id="cfg-adminpw" placeholder="Nueva contraseña..."/>
+        <input type="password" id="cfg-adminpw2" placeholder="Repetir contraseña..." style="margin-top:8px"/>
+        <button class="btn btn-primary" onclick="guardarConfig()"><i class="ti ti-device-floppy"></i> Guardar configuración</button>
+        <div id="cfg-msg" style="display:none;margin-top:10px;font-size:13px;color:#16a34a;font-weight:500"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Seguridad del sistema</div>
+        <div style="margin-top:10px">
+          <div class="dr"><span>Firma de QR</span><span>HMAC-SHA256</span></div>
+          <div class="dr"><span>Base de datos</span><span>Firebase Firestore</span></div>
+          <div class="dr"><span>Anti-falsificación</span><span>Firma criptográfica</span></div>
+          <div class="dr"><span>Anti-reutilización</span><span>ID único en Firestore</span></div>
+          <div class="dr"><span>Cancelación</span><span>En tiempo real</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyClVpb85PHHdNs9qRzfEXtuOqZH95rfmms",
+  authDomain: "ps-vouchers.firebaseapp.com",
+  projectId: "ps-vouchers",
+  storageBucket: "ps-vouchers.firebasestorage.app",
+  messagingSenderId: "502200885415",
+  appId: "1:502200885415:web:b5b3cc80e8b7715fd97b82"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// --- Auth ---
+const DEFAULT_ADMIN_PW = 'admin1234';
+function getAdminPW() { return localStorage.getItem('vqr_adminpw') || DEFAULT_ADMIN_PW; }
+
+window.doLogin = function() {
+  const pw = document.getElementById('login-pw').value;
+  if (pw === getAdminPW()) {
+    sessionStorage.setItem('vqr_auth','1');
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('login-pw').value = '';
+  }
+};
+window.doLogout = function() {
+  sessionStorage.removeItem('vqr_auth');
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('login-pw').value = '';
+};
+
+if (sessionStorage.getItem('vqr_auth') === '1') {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  initApp();
+}
+
+// --- State ---
+let SECRET_KEY = localStorage.getItem('vqr_key') || 'mi-bar-secreto-2024';
+let BAR_NOMBRE = localStorage.getItem('vqr_nombre') || '';
+let printQueue = [];
+let lastQRCode = '';
+let lastPayload = null;
+let lastDataURL = '';
+let chartDias = null;
+let historialCache = [];
+
+function initApp() {
+  BAR_NOMBRE = localStorage.getItem('vqr_nombre') || '';
+  SECRET_KEY = localStorage.getItem('vqr_key') || 'mi-bar-secreto-2024';
+  if (BAR_NOMBRE) document.getElementById('bar-nombre-display').textContent = 'Admin — ' + BAR_NOMBRE;
+  if (localStorage.getItem('vqr_key')) document.getElementById('key-status') && (document.getElementById('key-status').textContent = 'clave: personalizada');
+  if (localStorage.getItem('vqr_nombre')) document.getElementById('cfg-nombre').value = localStorage.getItem('vqr_nombre');
+  const hoy = new Date(); hoy.setDate(hoy.getDate()+30);
+  document.getElementById('gen-fecha').value = hoy.toISOString().split('T')[0];
+
+  // Test Firestore connection
+  getDocs(query(collection(db,'vales'), limit(1))).then(()=>{
+    const b = document.getElementById('db-badge');
+    b.textContent = '🟢 Firestore conectado';
+    b.classList.remove('offline');
+  }).catch(()=>{
+    const b = document.getElementById('db-badge');
+    b.textContent = '🔴 Sin conexión';
+  });
+}
+
+// --- Tabs ---
+window.switchTab = function(t) {
+  const ids = ['gen','stats','hist','imp','cfg'];
+  ids.forEach((id,i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', id===t);
+    document.getElementById('panel-'+id).classList.toggle('active', id===t);
+  });
+  if (t==='stats') renderStats();
+  if (t==='hist') cargarHistorial();
+  if (t==='imp') renderPrintQueue();
+};
+
+// --- Crypto ---
+async function hmacSign(msg, key) {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', k, enc.encode(msg));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function tipoLabel(tipo, valor) {
+  return {porcentaje:`${valor}% off`, monto:`$${valor} off`, '2x1':'2×1 tragos', copa_gratis:'Copa gratis'}[tipo] || tipo;
+}
+
+window.toggleValor = function() {
+  const t = document.getElementById('gen-tipo').value;
+  document.getElementById('valor-wrap').style.display = (t==='2x1'||t==='copa_gratis') ? 'none' : '';
+};
+
+function makeQRDataURL(text, size) {
+  const qr = new QRious({value:text, size:size||300, level:'M', background:'#ffffff', foreground:'#000000'});
+  return qr.toDataURL('image/png');
+}
+
+function buildValePNG(qrDataURL, payload) {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    canvas.width=420; canvas.height=500;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,420,500);
+    ctx.strokeStyle='#eeeeee'; ctx.lineWidth=1; ctx.strokeRect(14,14,392,472);
+    const img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img,110,30,200,200);
+      ctx.fillStyle='#aaa'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(BAR_NOMBRE||'Vale de descuento', 210, 252);
+      ctx.fillStyle='#111'; ctx.font='bold 18px sans-serif';
+      ctx.fillText(tipoLabel(payload.tipo,payload.valor), 210, 278);
+      ctx.fillStyle='#666'; ctx.font='14px sans-serif';
+      ctx.fillText('Válido hasta: '+payload.fecha, 210, 302);
+      if (payload.nota) { ctx.fillStyle='#888'; ctx.font='13px sans-serif'; ctx.fillText(payload.nota, 210, 324); }
+      ctx.fillStyle='#ccc'; ctx.font='10px monospace';
+      ctx.fillText('ID: '+payload.id, 210, 360);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src = qrDataURL;
+  });
+}
+
+// --- Generar vale ---
+window.generarVale = async function() {
+  const tipo = document.getElementById('gen-tipo').value;
+  const valor = document.getElementById('gen-valor').value;
+  const fecha = document.getElementById('gen-fecha').value;
+  const usos = document.getElementById('gen-usos').value;
+  const nota = document.getElementById('gen-nota').value;
+  if (!fecha) { alert('Ingresá una fecha de vencimiento.'); return; }
+
+  const id = 'V' + Date.now().toString(36).toUpperCase();
+  lastPayload = {id, tipo, valor, fecha, usos:parseInt(usos), nota, ts:Date.now()};
+  const data = btoa(unescape(encodeURIComponent(JSON.stringify(lastPayload))));
+  const sig = await hmacSign(data, SECRET_KEY);
+  lastQRCode = data + '.' + sig;
+
+  const qrDataURL = makeQRDataURL(lastQRCode, 300);
+  lastDataURL = await buildValePNG(qrDataURL, lastPayload);
+  document.getElementById('qr-img').src = qrDataURL;
+  document.getElementById('qr-result').style.display = 'block';
+  document.getElementById('vale-desc').textContent = tipoLabel(tipo, valor);
+  document.getElementById('vale-sub').textContent = 'Válido hasta ' + fecha + (nota ? ' · ' + nota : '');
+
+  // Guardar en Firestore
+  try {
+    await setDoc(doc(db, 'vales', id), {
+      id, tipo, valor, fecha, usos: parseInt(usos), nota,
+      event: 'generado',
+      cancelado: false,
+      creadoEn: new Date().toLocaleString('es'),
+      creadoTs: serverTimestamp()
+    });
+  } catch(e) {
+    console.error('Error guardando en Firestore:', e);
+  }
+};
+
+window.descargarPNG = function() {
+  if (!lastDataURL) return;
+  const a = document.createElement('a');
+  a.download = 'vale-' + (lastPayload ? lastPayload.id : 'qr') + '.png';
+  a.href = lastDataURL; a.click();
+};
+
+window.copiarCodigo = function() {
+  if (!lastQRCode) return;
+  navigator.clipboard.writeText(lastQRCode).then(()=>alert('Código copiado.')).catch(()=>{
+    const t=document.createElement('textarea');t.value=lastQRCode;
+    document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);
+    alert('Código copiado.');
+  });
+};
+
+window.agregarAImpresion = function() {
+  if (!lastPayload || !lastQRCode) return;
+  printQueue.push({payload:{...lastPayload}, code:lastQRCode, dataURL:makeQRDataURL(lastQRCode,140)});
+  renderPrintQueue();
+  alert('Agregado (' + printQueue.length + ' en la cola).');
+};
+
+// --- Historial desde Firestore ---
+async function cargarHistorial() {
+  document.getElementById('hist-loading').style.display = 'block';
+  document.getElementById('hist-lista').style.display = 'none';
+
+  try {
+    // Cargar vales generados
+    const valesSnap = await getDocs(query(collection(db,'vales'), orderBy('creadoTs','desc'), limit(200)));
+    const canjesSnap = await getDocs(query(collection(db,'canjes'), orderBy('canjeadoTs','desc'), limit(200)));
+
+    const vales = valesSnap.docs.map(d => ({...d.data(), _col:'vales'}));
+    const canjes = canjesSnap.docs.map(d => ({...d.data(), _col:'canjes'}));
+
+    // Merge y ordenar por timestamp
+    historialCache = [...vales, ...canjes].sort((a,b) => {
+      const ta = a.creadoTs?.toMillis?.() || a.canjeadoTs?.toMillis?.() || 0;
+      const tb = b.creadoTs?.toMillis?.() || b.canjeadoTs?.toMillis?.() || 0;
+      return tb - ta;
+    });
+
+  } catch(e) {
+    console.error(e);
+    historialCache = [];
+  }
+
+  document.getElementById('hist-loading').style.display = 'none';
+  document.getElementById('hist-lista').style.display = 'block';
+  renderHist();
+}
+
+window.renderHist = function() {
+  const filtro = document.getElementById('hist-filtro').value;
+  let items = historialCache;
+
+  if (filtro === 'generado') items = items.filter(h => h.event==='generado' && !h.cancelado);
+  else if (filtro === 'canjeado') items = items.filter(h => h.event==='canjeado');
+  else if (filtro === 'cancelado') items = items.filter(h => h.cancelado);
+  else if (filtro === 'invalido') items = items.filter(h => h.event==='invalido' || h.event==='vencido');
+
+  const el = document.getElementById('hist-lista');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-mood-empty"></i>Sin registros con este filtro.</div>';
+    return;
+  }
+
+  el.innerHTML = items.slice(0,120).map(h => {
+    const esVale = h._col === 'vales';
+    const esCanje = h._col === 'canjes';
+    const cancelado = h.cancelado;
+
+    let badgeClass, badgeLabel;
+    if (cancelado) { badgeClass='badge-cancel'; badgeLabel='cancelado'; }
+    else if (esCanje) { badgeClass='badge-ok'; badgeLabel='canjeado'; }
+    else { badgeClass='badge-gen'; badgeLabel='generado'; }
+
+    const ts = h.creadoTs?.toMillis?.() || h.canjeadoTs?.toMillis?.() || h.ts || 0;
+    const dt = ts ? new Date(ts).toLocaleString('es',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+
+    const puedeCancel = esVale && !cancelado;
+    const puedeReactivar = esVale && cancelado;
+
+    return `<div class="hist-item ${cancelado?'cancelado':''}" id="hitem-${h.id}">
+      <div class="hist-left">
+        <div><span class="badge ${badgeClass}">${badgeLabel}</span></div>
+        <div class="hist-desc">${tipoLabel(h.tipo,h.valor)}</div>
+        ${h.nota?`<div class="hist-nota">${h.nota}</div>`:''}
+      </div>
+      <div class="hist-right">
+        <span class="hist-time">${dt}</span>
+        ${puedeCancel ? `<button class="btn-cancel-vale" onclick="cancelarVale('${h.id}')"><i class="ti ti-ban"></i> Cancelar</button>` : ''}
+        ${puedeReactivar ? `<button class="btn-restore-vale" onclick="reactivarVale('${h.id}')"><i class="ti ti-refresh"></i> Reactivar</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// --- Cancelar / Reactivar vale ---
+window.cancelarVale = async function(id) {
+  if (!confirm('¿Cancelar este vale? El cajero no podrá canjearlo.')) return;
+  try {
+    await updateDoc(doc(db, 'vales', id), { cancelado: true, canceladoEn: new Date().toLocaleString('es') });
+    // Actualizar cache local
+    const item = historialCache.find(h => h.id === id);
+    if (item) { item.cancelado = true; }
+    renderHist();
+  } catch(e) {
+    alert('Error al cancelar: ' + e.message);
+  }
+};
+
+window.reactivarVale = async function(id) {
+  if (!confirm('¿Reactivar este vale?')) return;
+  try {
+    await updateDoc(doc(db, 'vales', id), { cancelado: false, canceladoEn: null });
+    const item = historialCache.find(h => h.id === id);
+    if (item) { item.cancelado = false; }
+    renderHist();
+  } catch(e) {
+    alert('Error al reactivar: ' + e.message);
+  }
+};
+
+window.limpiarHistLocal = function() {
+  if (confirm('¿Limpiar el historial local? Los datos en Firestore no se borran.')) {
+    historialCache = [];
+    renderHist();
+  }
+};
+
+// --- Stats ---
+window.renderStats = async function() {
+  document.getElementById('metric-grid').innerHTML = '<div style="padding:10px;color:#aaa;font-size:13px"><span class="spinner"></span> Cargando...</div>';
+  try {
+    const valesSnap = await getDocs(collection(db,'vales'));
+    const canjesSnap = await getDocs(collection(db,'canjes'));
+    const vales = valesSnap.docs.map(d=>d.data());
+    const canjes = canjesSnap.docs.map(d=>d.data());
+
+    const gen = vales.filter(v=>!v.cancelado).length;
+    const can = canjes.length;
+    const cancel = vales.filter(v=>v.cancelado).length;
+    const tasa = gen>0 ? Math.round(can/gen*100) : 0;
+
+    document.getElementById('metric-grid').innerHTML = `
+      <div class="metric"><div class="metric-val">${gen}</div><div class="metric-lbl">Generados</div></div>
+      <div class="metric"><div class="metric-val">${can}</div><div class="metric-lbl">Canjeados</div></div>
+      <div class="metric"><div class="metric-val">${tasa}%</div><div class="metric-lbl">Tasa canje</div></div>
+      <div class="metric"><div class="metric-val">${cancel}</div><div class="metric-lbl">Cancelados</div></div>`;
+
+    const tipos = {};
+    canjes.forEach(h=>{ const k=tipoLabel(h.tipo,h.valor); tipos[k]=(tipos[k]||0)+1; });
+    const el = document.getElementById('stats-tipos');
+    if (!Object.keys(tipos).length) { el.innerHTML='<p style="font-size:13px;color:#aaa">Sin canjes aún.</p>'; }
+    else {
+      const max = Math.max(...Object.values(tipos));
+      el.innerHTML = Object.entries(tipos).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+        <div class="bar-chart-row">
+          <div class="bar-label"><span>${k}</span><span>${v}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
+        </div>`).join('');
+    }
+
+    // Chart últimos 7 días
+    const dias7 = [];
+    for (let i=6; i>=0; i--) {
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const ds = d.toISOString().split('T')[0];
+      dias7.push({
+        label: d.toLocaleDateString('es',{weekday:'short'}),
+        gen: vales.filter(v => v.creadoTs?.toDate?.().toISOString().split('T')[0]===ds).length,
+        can: canjes.filter(c => c.canjeadoTs?.toDate?.().toISOString().split('T')[0]===ds).length
+      });
+    }
+    if (chartDias) chartDias.destroy();
+    chartDias = new Chart(document.getElementById('chart-dias').getContext('2d'), {
+      type:'bar',
+      data:{labels:dias7.map(d=>d.label), datasets:[
+        {label:'Generados', data:dias7.map(d=>d.gen), backgroundColor:'#bfdbfe'},
+        {label:'Canjeados', data:dias7.map(d=>d.can), backgroundColor:'#bbf7d0'}
+      ]},
+      options:{responsive:true, plugins:{legend:{labels:{font:{size:12}}}}, scales:{y:{beginAtZero:true, ticks:{stepSize:1}}}}
+    });
+  } catch(e) {
+    document.getElementById('metric-grid').innerHTML = '<p style="font-size:13px;color:#dc2626">Error cargando stats: ' + e.message + '</p>';
+  }
+};
+
+// --- Imprimir ---
+function renderPrintQueue() {
+  const grid = document.getElementById('imp-grid');
+  const vacio = document.getElementById('imp-vacio');
+  if (!printQueue.length) { grid.innerHTML=''; vacio.style.display='block'; return; }
+  vacio.style.display='none';
+  grid.innerHTML = printQueue.map((item,i)=>`
+    <div class="pq-card">
+      <img src="${item.dataURL}" width="120" height="120" style="display:block;margin:0 auto"/>
+      <div class="pq-label">${tipoLabel(item.payload.tipo,item.payload.valor)}</div>
+      <div class="pq-fecha">${item.payload.fecha}</div>
+      <button class="pq-remove" onclick="quitarCola(${i})"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+}
+window.quitarCola = i => { printQueue.splice(i,1); renderPrintQueue(); };
+window.vaciarCola = () => { if(confirm('¿Vaciar la cola?')) { printQueue=[]; renderPrintQueue(); } };
+
+window.imprimirTodo = function() {
+  if (!printQueue.length) { alert('No hay vales en la cola.'); return; }
+  const cards = printQueue.map(item=>`
+    <div style="border:1px solid #ccc;border-radius:8px;padding:14px;text-align:center;break-inside:avoid;background:#fff">
+      <img src="${item.dataURL}" width="140" height="140" style="display:block;margin:0 auto"/>
+      <p style="font-size:14px;font-weight:bold;margin-top:8px">${tipoLabel(item.payload.tipo,item.payload.valor)}</p>
+      <p style="font-size:12px;color:#666;margin-top:3px">Válido hasta: ${item.payload.fecha}</p>
+      ${item.payload.nota?`<p style="font-size:12px;color:#888">${item.payload.nota}</p>`:''}
+      <p style="font-size:9px;color:#bbb;font-family:monospace;margin-top:6px">${item.payload.id}</p>
+    </div>`).join('');
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Vales QR</title>
+    <style>body{margin:16px;font-family:sans-serif}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}@media print{@page{margin:1cm}}</style>
+    </head><body><div class="grid">${cards}</div><script>window.onload=function(){window.print()}<\/script></body></html>`);
+  w.document.close();
+};
+
+// --- Config ---
+window.guardarConfig = function() {
+  const secret = document.getElementById('cfg-secret').value.trim();
+  const nombre = document.getElementById('cfg-nombre').value.trim();
+  const pw1 = document.getElementById('cfg-adminpw').value.trim();
+  const pw2 = document.getElementById('cfg-adminpw2').value.trim();
+  if (pw1 && pw1!==pw2) { alert('Las contraseñas no coinciden.'); return; }
+  if (secret) { SECRET_KEY=secret; localStorage.setItem('vqr_key',secret); document.getElementById('cfg-secret').value=''; }
+  if (nombre) { BAR_NOMBRE=nombre; localStorage.setItem('vqr_nombre',nombre); document.getElementById('bar-nombre-display').textContent='Admin — '+nombre; }
+  if (pw1) { localStorage.setItem('vqr_adminpw',pw1); document.getElementById('cfg-adminpw').value=''; document.getElementById('cfg-adminpw2').value=''; }
+  const msg=document.getElementById('cfg-msg'); msg.style.display='block'; msg.textContent='✓ Configuración guardada.';
+};
+</script>
+</body>
+</html>
