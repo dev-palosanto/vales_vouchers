@@ -134,7 +134,8 @@ input:focus,select:focus{border-color:#888}
           </div>
           <div id="valor-wrap">
             <label>Valor</label>
-            <input type="number" id="gen-valor" value="20" min="1"/>
+            <input type="number" id="gen-valor" value="20" min="1" oninput="actualizarPreviewValor()"/>
+            <div id="valor-preview" style="font-size:12px;color:#888;margin-top:4px;min-height:16px"></div>
           </div>
         </div>
         <div class="row2">
@@ -356,6 +357,15 @@ function tipoLabel(tipo, valor) {
 window.toggleValor = function() {
   const t = document.getElementById('gen-tipo').value;
   document.getElementById('valor-wrap').style.display = (t==='2x1'||t==='copa_gratis') ? 'none' : '';
+  actualizarPreviewValor();
+};
+
+window.actualizarPreviewValor = function() {
+  const tipo  = document.getElementById('gen-tipo').value;
+  const valor = document.getElementById('gen-valor').value;
+  const el    = document.getElementById('valor-preview');
+  if (!valor || tipo !== 'monto') { el.textContent = ''; return; }
+  el.textContent = '₲ ' + Number(valor).toLocaleString('es-PY');
 };
 
 function makeQRDataURL(text, size) {
