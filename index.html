@@ -163,7 +163,10 @@ async function hmacSign(msg, key) {
 async function hmacVerify(msg, sig, key) { return (await hmacSign(msg, key)) === sig; }
 
 function tipoLabel(tipo, valor) {
-  return {porcentaje:`${valor}% off`, monto:`$${valor} off`, '2x1':'2×1 tragos', copa_gratis:'Copa gratis'}[tipo] || tipo;
+  const v = tipo === 'monto'
+    ? '₲ ' + Number(valor).toLocaleString('es-PY')
+    : valor;
+  return {porcentaje:`${v}% off`, monto:`${v} off`, '2x1':'2×1 tragos', copa_gratis:'Copa gratis'}[tipo] || tipo;
 }
 
 window.limpiarVal = function() { document.getElementById('val-result').style.display = 'none'; };
