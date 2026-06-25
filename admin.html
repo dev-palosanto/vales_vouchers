@@ -127,7 +127,7 @@ input:focus,select:focus{border-color:#888}
             <label>Tipo de descuento</label>
             <select id="gen-tipo" onchange="toggleValor()">
               <option value="porcentaje">Porcentaje (%)</option>
-              <option value="monto">Monto fijo ($)</option>
+              <option value="monto">Monto fijo (₲)</option>
               <option value="2x1">2×1 en tragos</option>
               <option value="copa_gratis">Copa gratis</option>
             </select>
@@ -347,7 +347,10 @@ async function hmacSign(msg, key) {
 }
 
 function tipoLabel(tipo, valor) {
-  return {porcentaje:`${valor}% off`, monto:`$${valor} off`, '2x1':'2×1 tragos', copa_gratis:'Copa gratis'}[tipo] || tipo;
+  const v = tipo === 'monto'
+    ? '₲ ' + Number(valor).toLocaleString('es-PY')
+    : valor;
+  return {porcentaje:`${v}% off`, monto:`${v} off`, '2x1':'2×1 tragos', copa_gratis:'Copa gratis'}[tipo] || tipo;
 }
 
 window.toggleValor = function() {
