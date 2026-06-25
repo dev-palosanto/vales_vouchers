@@ -134,8 +134,8 @@ input:focus,select:focus{border-color:#888}
           </div>
           <div id="valor-wrap">
             <label>Valor</label>
-            <input type="number" id="gen-valor" value="20" min="1" oninput="actualizarPreviewValor()"/>
-            <div id="valor-preview" style="font-size:12px;color:#888;margin-top:4px;min-height:16px"></div>
+            <input type="text" id="gen-valor" value="20" inputmode="numeric" autocomplete="off"
+              oninput="formatearValor(this)" style="font-size:15px;font-weight:500"/>
           </div>
         </div>
         <div class="row2">
@@ -357,16 +357,23 @@ function tipoLabel(tipo, valor) {
 window.toggleValor = function() {
   const t = document.getElementById('gen-tipo').value;
   document.getElementById('valor-wrap').style.display = (t==='2x1'||t==='copa_gratis') ? 'none' : '';
-  actualizarPreviewValor();
+  // Reformatear al cambiar tipo
+  const input = document.getElementById('gen-valor');
+  if (input.value) window.formatearValor(input);
 };
 
-window.actualizarPreviewValor = function() {
-  const tipo  = document.getElementById('gen-tipo').value;
-  const valor = document.getElementById('gen-valor').value;
-  const el    = document.getElementById('valor-preview');
-  if (!valor || tipo !== 'monto') { el.textContent = ''; return; }
-  el.textContent = '₲ ' + Number(valor).toLocaleString('es-PY');
+window.formatearValor = function(input) {
+  const tipo = document.getElementById('gen-tipo').value;
+  if (tipo !== 'monto') return; // Porcentaje: no formatea
+  const pos    = input.selectionStart;
+  const before = input.value.length;
+  const raw    = input.value.replace(/\D/g, '');
+  if (!raw) { input.value = ''; return; }
+  input.value  = Number(raw).toLocaleString('es-PY');
+  const diff   = input.value.length - before;
+  try { input.setSelectionRange(pos + diff, pos + diff); } catch(e) {}
 };
+
 
 function makeQRDataURL(text, size) {
   return new QRious({value:text, size:size||300, level:'M', background:'#ffffff', foreground:'#000000'}).toDataURL('image/png');
@@ -400,7 +407,7 @@ function buildValePNG(qrDataURL, payload) {
 // ── Generar vale ──────────────────────────────────────────────────
 window.generarVale = async function() {
   const tipo  = document.getElementById('gen-tipo').value;
-  const valor = document.getElementById('gen-valor').value;
+  const valor = document.getElementById('gen-valor').value.replace(/\./g, ''); // quitar separadores
   const fecha = document.getElementById('gen-fecha').value;
   const usos  = document.getElementById('gen-usos').value;
   const nota  = document.getElementById('gen-nota').value;
